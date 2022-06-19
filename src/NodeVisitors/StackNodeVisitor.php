@@ -1,22 +1,39 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
-namespace FilhoCodes\TwigStackExtension\NodeVisitors;
+namespace Crate\View\Twig\Extensions\NodeVisitors;
 
-use FilhoCodes\TwigStackExtension\Nodes\BodyNode;
+use Crate\View\Twig\Extensions\Nodes\StackReferenceNode;
 use Twig\Environment;
 use Twig\Node\ModuleNode;
 use Twig\Node\Node;
 use Twig\NodeVisitor\NodeVisitorInterface;
 
-/**
- * StackNodeVisitor
- *
- * Handle the Twig Nodes in order to enable the stack feature of this
- * extension.
- */
-final class StackNodeVisitor implements NodeVisitorInterface
+class StackNodeVisitor implements NodeVisitorInterface
 {
+
+    /**
+     * Stack Nodes
+     *
+     * @var StackReferenceNode[]
+     */
+    protected array $stacks;
+
+    /**
+     * Stack Item Nodes
+     *
+     * @var StackItemNodes[][]
+     */
+    protected array $nodes;
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->stacks = [];
+        $this->nodes = [];
+    }
+
     /**
      * @inheritDoc
      */
@@ -36,7 +53,7 @@ final class StackNodeVisitor implements NodeVisitorInterface
 
         if ($node->hasNode('body') && !$node->hasNode('parent')) {
             $body = $node->getNode('body');
-            $node->setNode('body', new BodyNode($body));
+            $node->setNode('body', new StackReferenceNode($body));
         }
 
         return $node;
@@ -49,4 +66,5 @@ final class StackNodeVisitor implements NodeVisitorInterface
     {
         return -10;
     }
+
 }

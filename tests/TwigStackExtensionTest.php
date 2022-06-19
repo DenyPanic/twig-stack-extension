@@ -1,9 +1,8 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
-namespace FilhoCodes\TwigStackExtensionTests;
+namespace Crate\ViewTest\Twig\Extensions;
 
-use FilhoCodes\TwigStackExtension\TwigStackExtension;
+use Crate\View\Twig\Extensions\StackExtension;
 use PHPUnit\Framework\TestCase;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -11,9 +10,6 @@ use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Twig\Loader\FilesystemLoader;
 
-/**
- * TwigStackExtensionTest
- */
 final class TwigStackExtensionTest extends TestCase
 {
     /**
@@ -32,20 +28,7 @@ final class TwigStackExtensionTest extends TestCase
     {
         parent::setUp();
         $this->twig = new Environment(new FilesystemLoader(__DIR__.'/templates'));
-        $this->twig->addExtension(new TwigStackExtension());
-    }
-
-    /**
-     * TwigStackExtensionTest->testPushPrepend()
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     */
-    public function testPushPrependViaInclude(): void
-    {
-        $result = trim($this->twig->render('via-include/template.html.twig'));
-        $this->assertMatchesRegularExpression('/^1\s+2\s+3$/', $result);
+        $this->twig->addExtension(new StackExtension());
     }
 
     /**
@@ -57,8 +40,23 @@ final class TwigStackExtensionTest extends TestCase
      */
     public function testPushPrependViaExtends(): void
     {
-        $result = trim($this->twig->render('via-extends/template.html.twig'));
-        $this->assertMatchesRegularExpression('/^4\s+5\s+6$/', $result);
+        $result = trim($this->twig->render('via-extends/template.twig'));
+        $expected = file_get_contents(__DIR__ . '/templates/via-extends/result.html');
+        $this->assertSame($expected, $result);
+    }
+    
+    /**
+     * TwigStackExtensionTest->testPushPrepend()
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
+    public function testPushPrependViaInclude(): void
+    {
+        $result = trim($this->twig->render('via-include/template.twig'));
+        $expected = file_get_contents(__DIR__ . '/templates/via-include/result.html');
+        $this->assertSame($expected, $result);
     }
 
     /**
@@ -70,20 +68,20 @@ final class TwigStackExtensionTest extends TestCase
      */
     public function testPushPrependViaEmbed(): void
     {
-        $result = trim($this->twig->render('via-embed/template.html.twig'));
+        $result = trim($this->twig->render('via-embed/template.twig'));
         $this->assertMatchesRegularExpression('/^7\s+8\s+9$/', $result);
     }
 
     /**
-     * TwigStackExtensionTest->testPushPrependWithUniqueId()
+     * TwigStackExtensionTest->testPushPrependOnce()
      *
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function testPushPrependWithUniqueId(): void
+    public function testPushPrependOnce(): void
     {
-        $result = trim($this->twig->render('via-embed-with-unique-id/template.html.twig'));
+        $result = trim($this->twig->render('via-embed-once/template.twig'));
 
         $lines = preg_split('/\s*\n+\s*/', $result);
         $this->assertEquals([

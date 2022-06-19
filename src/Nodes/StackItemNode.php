@@ -1,23 +1,17 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
-namespace FilhoCodes\TwigStackExtension\Nodes;
+namespace Crate\View\Twig\Extensions\Nodes;
 
-use FilhoCodes\TwigStackExtension\TwigStackExtension;
+use Crate\View\Twig\Extensions\StackExtension;
 use Twig\Compiler;
 use Twig\Node\Node;
+use Twig\Node\NodeCaptureInterface;
 
-/**
- * PushNode
- *
- * Node with a content that instead of being rendered in place, will
- * be rendered in his respective stack. The contents will be pushed
- * (added at the end) into said stack.
- */
-final class PushNode extends Node
+class StackItemNode extends Node implements NodeCaptureInterface
 {
+
     /**
-     * new PushNode()
+     * Create a new PushNode
      *
      * @param string $name
      * @param string|null $id
@@ -25,24 +19,28 @@ final class PushNode extends Node
      * @param int $lineno
      * @param string|null $tag
      */
-    public function __construct(string $name, ?string $id, Node $body, int $lineno = 0, string $tag = null)
+    public function __construct(Node $body, string $name, string $mode, bool $once, int $lineno = 0, string $tag = null)
     {
         parent::__construct(['body' => $body], [
             'name' => $name,
-            'id' => $id,
+            'mode' => $mode,
+            'once' => $once
         ], $lineno, $tag);
     }
 
     /**
-     * PushNode->compile()
+     * Compile Node
      *
      * @param Compiler $compiler
      */
     public function compile(Compiler $compiler)
     {
-        $extension = TwigStackExtension::class;
-        $stackName = $this->getAttribute('name');
-        $id = ($idValue = $this->getAttribute('id')) ? "'{$idValue}'" : 'null';
+        $extension = StackExtension::class;
+        $ident = $this->getTemplateName() . ':' . $this->lineno;
+        
+        $name = $this->getAttribute('name');
+        $mode = $this->getAttribute('mode');
+        $once = $this->getAttribute('once')? "'{$ident}'": 'null';
 
         $compiler
             ->write("ob_start();\n")
@@ -58,6 +56,7 @@ final class PushNode extends Node
             ->write("}\n\n")
             ->write("\$extension = \$this->env->getExtension('{$extension}');\n")
             ->write("\$manager = \$extension->getManager();\n\n")
-            ->write("echo \$manager->pushContentIntoStack('{$stackName}', {$id}, ob_get_clean());\n\n");
+            ->write("\$manager->addContent('{$name}', ob_get_clean(), '{$mode}', {$once});\n\n");
     }
+
 }

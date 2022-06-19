@@ -1,0 +1,7 @@
+{% if type == 'push' %}
+  {% push empty_stack %} {{ value }} {% endpush %}
+{% endif %}
+
+{% if type == 'unshift' %}
+  {% unshift empty_stack %} {{ value }} {% endunshift %}
+{% endif %}

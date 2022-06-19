@@ -1,22 +1,16 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
-namespace FilhoCodes\TwigStackExtension\Nodes;
+namespace Crate\View\Twig\Extensions\Nodes;
 
-use FilhoCodes\TwigStackExtension\TwigStackExtension;
+use Crate\View\Twig\Extensions\StackExtension;
 use Twig\Compiler;
 use Twig\Node\Node;
 
-/**
- * BodyNode
- *
- * Decorates the default body node, replacing all the placeholders for
- * stacks with the final result.
- */
-final class BodyNode extends Node
+class StackReferenceNode extends Node
 {
+
     /**
-     * new BodyNode()
+     * Create a new StackReferenceNode
      *
      * @param Node $body
      * @param int $lineno
@@ -28,13 +22,13 @@ final class BodyNode extends Node
     }
 
     /**
-     * BodyNode->compile()
+     * Compile Node
      *
      * @param Compiler $compiler
      */
     public function compile(Compiler $compiler)
     {
-        $extension = TwigStackExtension::class;
+        $extension = StackExtension::class;
 
         $compiler
             ->write("ob_start();\n")
@@ -50,6 +44,7 @@ final class BodyNode extends Node
             ->write("}\n\n")
             ->write("\$extension = \$this->env->getExtension('{$extension}');\n")
             ->write("\$manager = \$extension->getManager();\n")
-            ->write("echo \$manager->replaceBodyWithStacks(ob_get_clean());\n\n");
+            ->write("echo \$manager->replaceStacks(ob_get_clean());\n\n");
     }
+
 }

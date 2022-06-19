@@ -1,38 +1,47 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
-namespace FilhoCodes\TwigStackExtension;
+namespace Crate\View\Twig\Extensions;
 
-/**
- * Stack
- *
- * A storage of contents to be rendered into a Twig Template.
- */
-final class Stack
+class Stack
 {
+
     /**
-     * Stack->name
+     * Unique Stack Name
      *
      * @var string
      */
-    private $name;
+    protected string $name;
 
     /**
-     * Stack->contents
+     * Unique List
      *
      * @var string[]
      */
-    private $contents = [];
+    protected array $unique = [];
 
     /**
-     * Stack->ids
+     * Prepending Stack Content
      *
-     * @var array
+     * @var string[]
      */
-    private $ids = [];
+    protected array $prepends = [];
 
     /**
-     * new Stack()
+     * Initial Stack Content
+     *
+     * @var string[]
+     */
+    protected array $initial = [];
+
+    /**
+     * Appending Stack Content
+     *
+     * @var string[]
+     */
+    protected array $appends = [];
+
+    /**
+     * Create a new Stack
      *
      * @param string $name
      */
@@ -42,7 +51,7 @@ final class Stack
     }
 
     /**
-     * Stack->getName()
+     * Get Stack Name.
      *
      * @return string
      */
@@ -52,58 +61,68 @@ final class Stack
     }
 
     /**
-     * Stack->pushContents()
+     * Set initial Content.
      *
-     * @param string $contents
-     * @param string|null $id
+     * @param string $content
+     * @param ?string
+     * @return void
      */
-    public function pushContents(string $contents, string $id = null): void
+    public function initialContent(string $content, ?string $once = null): void
     {
-        if (!is_null($id) && $this->isUniqueComponentRegistered($id)) {
-            return;
+        if (is_null($once) || !in_array($once, $this->unique)) {
+            $this->initial = [$content];
         }
-
-        array_push($this->contents, $contents);
+        if (!is_null($once)) {
+            $this->unique[] = $once;
+        }
     }
 
     /**
-     * Stack->prependContents()
+     * Push Content into Stack.
      *
-     * @param string $contents
-     * @param string|null $id
+     * @param string $content
+     * @param ?string
+     * @return void
      */
-    public function prependContents(string $contents, string $id = null): void
+    public function pushContent(string $content, ?string $once = null): void
     {
-        if (!is_null($id) && $this->isUniqueComponentRegistered($id)) {
-            return;
+        if (is_null($once) || !in_array($once, $this->unique)) {
+            $this->appends[] = $content;
         }
-
-        array_unshift($this->contents, $contents);
+        if (!is_null($once)) {
+            $this->unique[] = $once;
+        }
     }
 
     /**
-     * Stack->getContents()
+     * Unshift content into Stack
      *
-     * @return string
+     * @param string $content
+     * @param ?string
+     * @return void
      */
-    public function getContents(): string
+    public function unshiftContent(string $content, ?string $once = null): void
     {
-        return join("\n", $this->contents);
+        if (is_null($once) || !in_array($once, $this->unique)) {
+            $this->prepends[] = $content;
+        }
+        if (!is_null($once)) {
+            $this->unique[] = $once;
+        }
     }
 
     /**
-     * Stack->isUniqueComponentRegistered()
+     * Get collected Stack Content.
      *
-     * @param string $id
-     * @return bool
+     * @return string[]
      */
-    private function isUniqueComponentRegistered(string $id): bool
+    public function getContent(): array
     {
-        if (in_array($id, $this->ids)) {
-            return true;
-        }
-
-        array_push($this->ids, $id);
-        return false;
+        return array_merge(
+            array_reverse($this->prepends),
+            $this->initial,
+            $this->appends
+        );
     }
+
 }
